@@ -8,6 +8,13 @@ import { session } from '../Connections/session';
 const registerRouter = express.Router();
 registerRouter.use(session);
 
+registerRouter.get('/', isAlreadyLoggedIn, (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array().map(item => item.msg) });
+
+    return res.status(204).send();
+})
+
 registerRouter.post(
     '/', 
     isAlreadyLoggedIn,
