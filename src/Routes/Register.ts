@@ -24,7 +24,8 @@ registerRouter.post(
         const errors = validationResult(req);
         if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array().map(item => item.msg) });
         try {
-            const { username, password } = req.body;
+            let { username, password } = req.body;
+            username = username.toLowerCase();
             const user = await User.findOne({ username });
             if (user) return res.status(400).json({ message: "Esiste già un utente con questo username!" });
             const encryptedPassword = await bcrypt.hash(password, 10);
