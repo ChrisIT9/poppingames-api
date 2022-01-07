@@ -10,9 +10,11 @@ import { session } from "./Connections/session";
 dbConnect();
 
 const app = express();
+
 app.use(cors({ origin: "http://192.168.1.200:4200", credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 app.use(session);
 
 app.use('/login', loginRouter);

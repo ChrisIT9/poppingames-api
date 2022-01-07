@@ -62,12 +62,14 @@ reviewsRouter.get(
         if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array().map(item => item.msg) });
         try {
             const { gameId } = req.params;
-            const reviews = await Review.find({ gameId });
-            return res.status(200).json(reviews);
+            const reviews: ReviewInterface[] = await Review.find({ gameId });
+            const average = reviews.reduce((acc, { rating }, _, { length }) => acc + (rating / length), 0.0);
+            return res.status(200).json({ reviews, average });
         } catch(error) {
-            return res.status(500).json(error)
+            return res.status(500).json(error);
         }
     }
 )
+
 
 export default reviewsRouter;
