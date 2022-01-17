@@ -5,6 +5,7 @@ export interface User {
 }
 
 export interface ReviewInterface {
+    _id: string,
     gameId: string,
     reviewedBy: string,
     rating: number,

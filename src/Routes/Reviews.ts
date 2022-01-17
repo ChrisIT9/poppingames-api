@@ -1,11 +1,12 @@
 import express, { Request } from 'express';
 import { body, param, query, validationResult } from 'express-validator';
 import { session } from '../Connections/session';
-import { requiresAuth } from '../Controllers/Auth';
+import { isAdmin, requiresAuth } from '../Controllers/Auth';
 import { validNumberIfExists, validStringIfExists } from '../Controllers/Generic';
 import { isValidReviewIfExists } from '../Controllers/Review';
 import { Review } from '../Models/Review.model';
 import { ReviewInterface } from '../Models/Types';
+import { isValidObjectId, Types } from 'mongoose';
 
 const reviewsRouter = express.Router();
 reviewsRouter.use(session);
@@ -65,6 +66,34 @@ reviewsRouter.get(
             const reviews: ReviewInterface[] = await Review.find({ gameId });
             const average = reviews.reduce((acc, { rating }, _, { length }) => acc + (rating / length), 0.0);
             return res.status(200).json({ reviews, average });
+        } catch(error) {
+            return res.status(500).json(error);
+        }
+    }
+)
+
+reviewsRouter.delete(
+    '/:reviewId',
+    requiresAuth,
+    param('reviewId').exists().withMessage("Fornire un ID!").isString().withMessage("ID non valido!"),
+    async (req: Request<{ reviewId: string }>, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array().map(item => item.msg) });
+        try {
+            const { reviewId } = req.params;
+
+            if (!isValidObjectId(reviewId))
+                return res.status(400).json({ message: "ID non valido!" });
+
+            const foundReview: ReviewInterface = await Review.findById(reviewId);
+
+            if (!foundReview) return res.status(400).json({ message: "Recensione non trovata!" });
+
+            if (foundReview && (req.session.isAdmin || foundReview.reviewedBy === req.session.username)) {
+                await Review.findByIdAndDelete(reviewId);
+                return res.status(200).json({ message: "Recensione cancellata con successo!", review: foundReview });
+            }
+            else return res.status(401).json({ message: "Non sei autorizzato ad eseguire quest'operazione!" });
         } catch(error) {
             return res.status(500).json(error);
         }

@@ -13,3 +13,10 @@ export const requiresAuth = (req: Request, res: Response, next: NextFunction) =>
 
     return next();
 }
+
+export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.session.isAdmin)
+        return res.status(401).json({ message: "Devi essere amministratore per eseguire quest'operazione!" });
+
+    return next();
+}

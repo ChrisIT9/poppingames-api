@@ -23,7 +23,7 @@ app.use('/logout', logoutRouter);
 app.use('/reviews', reviewsRouter);
 
 app.get('/', (req, res) => {
-    return res.status(200).json({ isLoggedIn: req.session.username ? true : false });
+    return res.status(200).json({ isLoggedIn: req.session.username ? true : false, isAdmin: req.session.isAdmin });
 })
 
 app.listen(3001, () => console.log("[EXPRESS] Server up on port 3001."));
